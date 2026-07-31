@@ -17,6 +17,7 @@ from pathway_prs_core import (
     infer_gwas_schema,
     plot_pathway_pgs_results,
     read_gmt_summary,
+    run_pathway_pgs,
     summarize_aggregate_results,
 )
 
@@ -152,6 +153,26 @@ def test_compact_app_launches_without_writing(monkeypatch, tmp_path: Path):
         for widget in observed
         if isinstance(widget, widgets.HTML)
     )
+    combined_html = "\n".join(
+        getattr(widget, "value", "")
+        for widget in observed
+        if isinstance(widget, widgets.HTML)
+    )
+    assert "What is a pathway PGS?" in combined_html
+    assert "Current analysis definition" in combined_html
+
+    button_labels = {
+        widget.description
+        for widget in observed
+        if isinstance(widget, widgets.Button)
+    }
+    assert {
+        "1. Check inputs",
+        "2. Map & harmonize",
+        "3. Review command",
+        "4. Calculate scores",
+        "5. Inspect results",
+    }.issubset(button_labels)
 
     run_mode = next(
         widget
@@ -431,6 +452,59 @@ def test_score_only_results_are_aggregated_without_ids(tmp_path: Path):
     assert (tmp_path / "demo.aggregate_score_summary.tsv").exists()
     figure = plot_pathway_pgs_results(summary)
     assert len(figure.axes) == 2
+
+
+def test_synthetic_scoring_run_and_aggregate_results(tmp_path: Path):
+    """Exercise validation, command execution, and aggregate result loading."""
+    gwas = tmp_path / "gwas.tsv"
+    gwas.write_text(
+        "CHR\tBP\tSNP\tA1\tA2\tBETA\tP\n"
+        "21\t100\trs1\tA\tG\t0.2\t0.01\n"
+    )
+    gtf = tmp_path / "genes.gtf"
+    gtf.write_text(
+        '21\ttest\tgene\t90\t110\t.\t+\t.\tgene_id "G1"; gene_name "G1";\n'
+    )
+    gmt = tmp_path / "pathways.gmt"
+    gmt.write_text("Pathway_A\tdescription\tG1\n")
+    target = tmp_path / "target"
+    for suffix in (".bed", ".bim", ".fam"):
+        Path(str(target) + suffix).write_text("")
+
+    wrapper = tmp_path / "wrapper.R"
+    wrapper.write_text("# synthetic wrapper placeholder\n")
+    binary = tmp_path / "engine"
+    binary.write_text("synthetic engine placeholder\n")
+    fake_rscript = tmp_path / "fake_rscript.sh"
+    fake_rscript.write_text(
+        "#!/bin/sh\n"
+        "out=''\n"
+        "while [ \"$#\" -gt 0 ]; do\n"
+        "  if [ \"$1\" = '--out' ]; then out=\"$2\"; shift 2; else shift; fi\n"
+        "done\n"
+        "printf 'FID IID Pathway_A Pathway_B\\n1 10 0.1 -0.2\\n2 20 0.3 0.4\\n' > \"${out}.all_score\"\n"
+    )
+    fake_rscript.chmod(0o755)
+
+    config = WorkflowConfig(
+        project_name="synthetic_end_to_end",
+        base_gwas=str(gwas),
+        target_prefix=str(target),
+        gtf_file=str(gtf),
+        gmt_file=str(gmt),
+        prsice_r=str(wrapper),
+        prsice_binary=str(binary),
+        rscript=str(fake_rscript),
+        output_dir=str(tmp_path / "results"),
+        output_prefix="synthetic",
+        controlled_workspace_acknowledged=True,
+    )
+    manifest = run_pathway_pgs(config, execute=True, timeout_seconds=30)
+    assert manifest["status"] == "PASS"
+    summary = summarize_aggregate_results(config)
+    assert summary["score_name"].tolist() == ["Pathway_A", "Pathway_B"]
+    assert summary["n"].tolist() == [2, 2]
+    assert summary["all_finite"].all()
 
 
 def test_example_config_is_loadable():

@@ -58,10 +58,11 @@ notebook["cells"] = [
 
         **Made by Sijia Zhu, Westerman Lab**
 
-        This code-first notebook explains how pathway polygenic scores are
-        constructed in the All of Us controlled workspace. Each section shows
-        the methodological choice, the Python code, the generated command, and
-        the relevant quality-control output.
+        This code-first notebook teaches how to construct pathway polygenic
+        scores (pPGS) in the All of Us controlled workspace. A pPGS is a
+        weighted polygenic score restricted to variants mapped to genes in one
+        biological pathway. Each section shows the scientific decision, the
+        Python code, the generated command, and the relevant QC output.
 
         The optional interface at the end is a convenience layer. It does not
         replace the step-by-step analysis shown in the notebook.
@@ -69,7 +70,7 @@ notebook["cells"] = [
     ),
     markdown(
         r"""
-        ## Learning goals
+        ## Learning goals and workflow
 
         After completing the tutorial, a reader should be able to:
 
@@ -78,6 +79,16 @@ notebook["cells"] = [
         3. inspect allele harmonization with All of Us genotypes;
         4. choose LD-clumping and GWAS p-value thresholds;
         5. reproduce the pathway-score command and interpret its QC outputs.
+
+        ### What each stage answers
+
+        | Stage | Question | Main output |
+        |---|---|---|
+        | Inputs | Are the GWAS, gene, pathway, and genotype files compatible? | Validation table |
+        | Mapping | Which GWAS variants belong to each pathway? | Pathway-variant sets |
+        | Harmonization | Do effect alleles match the AoU target alleles? | Canonical GWAS table |
+        | Scoring | Which variants remain after LD clumping and p-value filtering? | Participant-by-pathway score matrix |
+        | QC | Are the pathway scores finite and variable? | Aggregate table, figures, and report |
 
         Run the cells **in order**. Expensive operations are disabled by
         default and require an explicit change from `False` to `True`.
@@ -105,7 +116,8 @@ notebook["cells"] = [
         - $\mathbf{1}(p_j\leq\tau)$: GWAS p-value threshold indicator.
 
         A variant may contribute to several pathways, but it is counted only
-        once within any one pathway after clumping.
+        once within any one pathway after clumping. The score is therefore
+        pathway-specific, while the GWAS effect estimate remains variant-specific.
         """
     ),
     markdown(
@@ -174,13 +186,16 @@ notebook["cells"] = [
         r"""
         ## 1. Make the analysis choices
 
-        Edit this cell before a scientific run. The demonstration uses two
+        Edit this cell before a scientific run. Start with the demonstration,
+        which uses two
         synthetic chromosome 21 variants and 100 All of Us participants. It
         verifies the workflow only and is not a scientific result.
 
         Important choices are kept together so the analysis can be reviewed
-        and reproduced. `PREPARE_AOU_DATA` and `RUN_SCORING` remain `False`
-        until the corresponding sections are reviewed.
+        and reproduced. For a full run, confirm the genome build, effect
+        allele, SNP-to-gene mapping, pathway definition, LD parameters, and
+        participant subset. `PREPARE_AOU_DATA` and `RUN_SCORING` remain
+        `False` until the corresponding sections are reviewed.
         """
     ),
     code(
@@ -363,7 +378,10 @@ notebook["cells"] = [
         2. match chromosome, position, REF, and ALT against AoU BED metadata;
         3. register the existing chromosome-wise AoU files and selected people.
 
-        It does **not** copy the full WGS dataset. Set `PREPARE_AOU_DATA = True`
+        The deduplicated union is important: each target variant is located
+        once even when it belongs to many genes or pathways. This step reads
+        genotype metadata for harmonization but does **not** copy the full WGS
+        dataset. Set `PREPARE_AOU_DATA = True`
         in Section 1 only after reviewing the inputs and this code.
         """
     ),
@@ -515,9 +533,9 @@ notebook["cells"] = [
         ## Optional guided interface
 
         The interface below runs the same functions used in the visible cells
-        above. It is useful for demonstrations and parameter exploration, but
-        readers should first understand Sections 1-7 and review every generated
-        command before execution.
+        above. Start with Quick demo and follow its five stages. For a full
+        analysis, first understand Sections 1-7, replace the scientific inputs,
+        and review every generated command before execution.
         """
     ),
     code(
@@ -527,6 +545,9 @@ notebook["cells"] = [
         """
     ),
 ]
+
+for index, cell in enumerate(notebook["cells"], start=1):
+    cell["id"] = f"pathway-pgs-{index:02d}"
 
 DESTINATION.write_text(json.dumps(notebook, indent=1) + "\n")
 print(DESTINATION)

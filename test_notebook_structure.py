@@ -37,6 +37,7 @@ def test_notebook_exposes_methods_and_safety_switches():
         "build_pathway_pgs_command",
         "Exact command (review only)",
         "Optional guided interface",
+        "What each stage answers",
     ]
     for text in required_text:
         assert text in source

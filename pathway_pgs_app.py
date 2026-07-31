@@ -74,6 +74,15 @@ def _text(description: str, value: str = "", placeholder: str = ""):
     )
 
 
+STEP_GUIDANCE = {
+    1: "Confirm the GWAS, gene/pathway definitions, participants, and genotype files.",
+    2: "Map variants to pathways and harmonize alleles with the AoU target metadata.",
+    3: "Inspect QC and the exact scoring command. No score is calculated yet.",
+    4: "Apply pathway-specific LD clumping and calculate weighted dosage sums.",
+    5: "Review aggregate score QC, figures, and the reproducible run report.",
+}
+
+
 def _workflow_status(step: int, label: str) -> str:
     return f"""
     <div style="
@@ -83,8 +92,10 @@ def _workflow_status(step: int, label: str) -> str:
         margin:4px 0 8px 0;
         color:#24323d;
     ">
-      <b>Step {step} of 5</b>
-      <span style="margin-left:8px">{label}</span>
+      <div><b>Step {step} of 5</b><span style="margin-left:8px">{label}</span></div>
+      <div style="color:#53636c;font-size:13px;margin-top:3px">
+        {STEP_GUIDANCE[step]}
+      </div>
     </div>
     """
 
@@ -172,9 +183,43 @@ def launch_pathway_pgs_app():
             Made by Sijia Zhu, Westerman Lab
           </div>
           <div style="color:#4b5563;margin-top:3px">
-            Optional guided controls for the code-first tutorial. Review the
-            notebook methods and generated command before execution.
+            Learn the method in the notebook, then use these controls to run
+            the same transparent workflow in the controlled workspace.
           </div>
+        </div>
+        """
+    )
+
+    concept_guide = widgets.HTML(
+        """
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+          <div style="border-left:4px solid #177e89;padding:8px 12px;background:#f6f9fa">
+            <b>What is a pathway PGS?</b><br>
+            <span style="color:#53636c">A weighted sum of effect-allele dosages,
+            restricted to variants mapped to genes in one biological pathway.</span>
+          </div>
+          <div style="border-left:4px solid #4f7cac;padding:8px 12px;background:#f6f9fa">
+            <b>What do you obtain?</b><br>
+            <span style="color:#53636c">One score per participant, pathway, and
+            selected GWAS p-value threshold, plus aggregate QC and figures.</span>
+          </div>
+          <div style="border-left:4px solid #6b8e23;padding:8px 12px;background:#f6f9fa">
+            <b>Recommended first run</b><br>
+            <span style="color:#53636c">Use Quick demo, complete Steps 1-5, then
+            switch to Full analysis and replace the scientific inputs.</span>
+          </div>
+        </div>
+        """
+    )
+
+    workflow_guide = widgets.HTML(
+        """
+        <div style="line-height:1.55;color:#334155">
+          <b>Before starting</b><br>
+          1. Choose a GWAS whose genome build matches the target genotypes.<br>
+          2. Choose how SNPs map to genes and which pathway database to use.<br>
+          3. Review effect alleles, LD settings, and p-value thresholds before calculation.<br>
+          4. Keep all participant-level inputs and scores inside the controlled workspace.
         </div>
         """
     )
@@ -257,6 +302,8 @@ def launch_pathway_pgs_app():
         </div>
         """
     )
+
+    analysis_summary = widgets.HTML()
 
     engine_status = widgets.HTML()
     install_engine = widgets.Button(
@@ -468,29 +515,29 @@ def launch_pathway_pgs_app():
     )
 
     check_button = widgets.Button(
-        description="1. Check", button_style="info", icon="check", layout=STEP_BUTTON
+        description="1. Check inputs", button_style="info", icon="check", layout=STEP_BUTTON
     )
     prepare_button = widgets.Button(
-        description="2. Prepare data",
+        description="2. Map & harmonize",
         icon="cogs",
         disabled=True,
         layout=STEP_BUTTON,
     )
     preview_button = widgets.Button(
-        description="3. Review",
+        description="3. Review command",
         icon="search",
         disabled=True,
         layout=STEP_BUTTON,
     )
     run_button = widgets.Button(
-        description="4. Calculate",
+        description="4. Calculate scores",
         button_style="danger",
         icon="play",
         disabled=True,
         layout=STEP_BUTTON,
     )
     results_button = widgets.Button(
-        description="5. Results",
+        description="5. Inspect results",
         button_style="success",
         icon="bar-chart",
         disabled=True,
@@ -517,6 +564,31 @@ def launch_pathway_pgs_app():
     custom_snp_set = ADAPTER / "custom_pathway_snp_sets.gmt"
     target_list_file = ADAPTER / "aou_bed_target_prefixes.txt"
     source_gwas = {"path": ""}
+
+    def refresh_analysis_summary(_=None) -> None:
+        mapping = "physical distance" if mapping_method.value == "physical" else "custom table"
+        pathway = next(
+            (
+                label
+                for label, value in pathway_source.options
+                if value == pathway_source.value
+            ),
+            pathway_source.value,
+        )
+        analysis_summary.value = f"""
+        <div style="background:#f8fafc;border:1px solid #d8e0e5;padding:10px 12px;line-height:1.5">
+          <b>Current analysis definition</b><br>
+          <span style="color:#53636c">
+            Mode: <b>{'Quick demo' if run_mode.value == 'demo' else 'Full analysis'}</b>
+            &nbsp;|&nbsp; Build: <b>{genome_build.value}</b>
+            &nbsp;|&nbsp; SNP-to-gene: <b>{mapping}</b><br>
+            Pathways: <b>{pathway}</b>
+            &nbsp;|&nbsp; p threshold(s): <b>{thresholds.value or 'not set'}</b>
+            &nbsp;|&nbsp; LD: <b>{clump_kb.value} kb, r²={clump_r2.value:g}</b>
+            &nbsp;|&nbsp; Chromosomes: <b>{chromosomes.value}</b>
+          </span>
+        </div>
+        """
 
     def refresh_engine_status() -> None:
         wrapper = prsice_r.value.strip()
@@ -763,6 +835,7 @@ def launch_pathway_pgs_app():
             with input_message:
                 print("Full analysis: review the detected files or enter custom paths.")
                 print("Complete Step 1 before preparing the AoU genotype target.")
+        refresh_analysis_summary()
 
     def ensure_demo_keep_file() -> None:
         if run_mode.value != "demo" or Path(keep_file.value).exists():
@@ -791,7 +864,7 @@ def launch_pathway_pgs_app():
                     print("GWAS header detected. No manual column entry is needed.")
                 print(", ".join(schema["available_columns"]))
             except Exception as error:
-                print(f"{type(error).__name__}: {error}")
+                print(f"Action needed: {type(error).__name__}: {error}")
 
     def handle_check(_):
         workflow_status.value = _workflow_status(1, "Checking inputs")
@@ -896,7 +969,7 @@ def launch_pathway_pgs_app():
                     )
                     print("Resolve MISSING or REVIEW rows before continuing.")
             except Exception as error:
-                print(f"{type(error).__name__}: {error}")
+                print(f"Action needed: {type(error).__name__}: {error}")
 
     def handle_prepare(_):
         workflow_status.value = _workflow_status(
@@ -980,7 +1053,7 @@ def launch_pathway_pgs_app():
                 print("AoU target metadata are ready. No genotype conversion was performed.")
             except Exception as error:
                 prepare_button.disabled = False
-                print(f"{type(error).__name__}: {error}")
+                print(f"Action needed: {type(error).__name__}: {error}")
 
     def handle_preview(_):
         workflow_status.value = _workflow_status(3, "Reviewing QC and command")
@@ -1011,7 +1084,7 @@ def launch_pathway_pgs_app():
                 )
                 print("Preview complete. Nothing was executed.")
             except Exception as error:
-                print(f"{type(error).__name__}: {error}")
+                print(f"Action needed: {type(error).__name__}: {error}")
 
     def handle_run(_):
         workflow_status.value = _workflow_status(4, "Calculating pathway scores")
@@ -1032,7 +1105,7 @@ def launch_pathway_pgs_app():
                 print("Pathway scoring complete. Continue to Step 5.")
             except Exception as error:
                 run_button.disabled = False
-                print(f"{type(error).__name__}: {error}")
+                print(f"Action needed: {type(error).__name__}: {error}")
 
     def handle_results(_):
         workflow_status.value = _workflow_status(5, "Aggregate results")
@@ -1067,7 +1140,7 @@ def launch_pathway_pgs_app():
                 print(f"Report: {report}")
                 print(f"Figures: {figure_dir}")
             except Exception as error:
-                print(f"{type(error).__name__}: {error}")
+                print(f"Action needed: {type(error).__name__}: {error}")
 
     project_name.observe(
         lambda change: setattr(output_prefix, "value", change["new"].strip())
@@ -1087,6 +1160,17 @@ def launch_pathway_pgs_app():
     preview_button.on_click(handle_preview)
     run_button.on_click(handle_run)
     results_button.on_click(handle_results)
+    for control in (
+        run_mode,
+        genome_build,
+        mapping_method,
+        pathway_source,
+        thresholds,
+        clump_kb,
+        clump_r2,
+        chromosomes,
+    ):
+        control.observe(refresh_analysis_summary, names="value")
 
     required_inputs = widgets.VBox(
         [
@@ -1103,6 +1187,7 @@ def launch_pathway_pgs_app():
             ),
             setup_message,
             demo_summary,
+            analysis_summary,
             mapping_method,
             annotation_source,
             pathway_source,
@@ -1136,6 +1221,10 @@ def launch_pathway_pgs_app():
     return widgets.VBox(
         [
             title,
+            concept_guide,
+            widgets.VBox(
+                [widgets.HTML("<b>How to begin</b>"), workflow_guide], layout=CARD
+            ),
             required_inputs,
             widgets.VBox(
                 [widgets.HTML("<b>Advanced settings</b>"), advanced], layout=CARD
