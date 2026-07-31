@@ -1,6 +1,6 @@
 # Pathway PGS Tutorial for All of Us
 
-A code-first Jupyter tutorial for constructing pathway-level polygenic scores
+A Jupyter tutorial for constructing pathway-level polygenic scores
 (pPGS) in the All of Us Researcher Workbench controlled workspace.
 
 The notebook teaches the analysis rather than hiding it behind a one-click
