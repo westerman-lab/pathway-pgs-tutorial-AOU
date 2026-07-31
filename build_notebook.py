@@ -130,8 +130,10 @@ notebook["cells"] = [
 
         candidates = [
             Path.cwd(),
+            Path.cwd() / "pathway-pgs-tutorial-AOU",
             Path.cwd() / "pathway-pgs-tutorial",
             Path.cwd() / "pathway_prs_tutorial",
+            Path.home() / "pathway-pgs-tutorial-AOU",
             Path.home() / "pathway-pgs-tutorial",
             Path.home() / "pathway_prs_tutorial",
         ]

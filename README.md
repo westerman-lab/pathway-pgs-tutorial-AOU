@@ -39,8 +39,8 @@ Clone the repository in a Workbench terminal:
 
 ```bash
 cd ~
-git clone https://github.com/westerman-lab/pathway-pgs-tutorial.git
-cd pathway-pgs-tutorial
+git clone https://github.com/westerman-lab/pathway-pgs-tutorial-AOU.git
+cd pathway-pgs-tutorial-AOU
 pip install --user -r requirements.txt
 ```
 
