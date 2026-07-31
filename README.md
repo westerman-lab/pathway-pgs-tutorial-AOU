@@ -3,8 +3,6 @@
 An interactive Jupyter workflow for constructing pathway-level polygenic
 scores in the All of Us Researcher Workbench.
 
-**Made by Sijia Zhu, Westerman's Lab**
-
 ## Overview
 
 The notebook guides users from GWAS summary statistics to participant-level
