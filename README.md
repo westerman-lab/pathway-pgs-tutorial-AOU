@@ -1,4 +1,4 @@
-# Pathway PGS Tutorial
+# Pathway PGS Tutorial for All of US
 
 An interactive Jupyter workflow for constructing pathway-level polygenic
 scores in the All of Us Researcher Workbench.
