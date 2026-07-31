@@ -1,0 +1,2 @@
+chr21	PathwayPGS	gene	5029000	5030550	.	+	.	gene_id "DEMO_GENE_1"; gene_name "DEMO_GENE_1";
+chr21	PathwayPGS	gene	5030551	5032000	.	+	.	gene_id "DEMO_GENE_2"; gene_name "DEMO_GENE_2";

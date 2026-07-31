@@ -1,0 +1,3 @@
+#chrom	pos	ref	alt	rsids	pval	beta
+21	5030516	G	A	demo_chr21_5030516_G_A	0.001	0.120
+21	5030578	C	T	demo_chr21_5030578_C_T	0.010	-0.085
