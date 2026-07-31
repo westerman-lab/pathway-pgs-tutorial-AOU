@@ -1,0 +1,16 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Generated analysis inputs and outputs
+analysis/data/pathway_pgs_workspace/
+analysis/results/
+*.all.score
+*.all_score
+*.best
+*.log
+
+# Never commit controlled person-level files
+participants.keep
