@@ -1,36 +1,46 @@
 # Pathway PGS Tutorial for All of Us
 
-A Jupyter tutorial for constructing pathway-level polygenic scores
-(pPGS) in the All of Us Researcher Workbench controlled workspace.
+An end-to-end Jupyter workflow that converts GWAS summary statistics and All
+of Us WGS genotypes into biologically interpretable pathway-level polygenic
+scores (pPGS).
 
-The notebook teaches the analysis rather than hiding it behind a one-click
-tool. Each stage exposes the scientific choice, executable code, exact scoring
-command, and quality-control output. An optional guided interface calls the
-same functions after the reader has reviewed the method.
+The tutorial connects every stage of the analysis in one reproducible workflow:
 
-## What You Will Learn
+**GWAS variants -> genes -> biological pathways -> participant-level pPGS**
 
-The tutorial walks through the complete pathway-scoring workflow:
+Users can:
 
-1. read GWAS effect alleles, effect sizes, and p-values;
-2. map variants to genes using physical distance or a custom mapping table;
-3. map genes to biological pathways;
-4. harmonize GWAS variants and alleles with All of Us genotypes;
-5. apply pathway-specific LD clumping and p-value thresholds;
-6. calculate participant-level pathway scores;
-7. inspect aggregate QC, figures, and a reproducible report.
+- automatically detect common GWAS formats and harmonize effect alleles with
+  All of Us genotypes;
+- map SNPs to genes using physical distance or a custom eQTL, regulatory, or
+  chromatin-based mapping table;
+- use Reactome, GO Biological Process, WikiPathways, or a custom pathway set;
+- perform pathway-specific LD clumping and GWAS p-value thresholding;
+- calculate pathway scores for a selected All of Us participant cohort;
+- generate aggregate QC tables, publication-ready figures, and a reproducible
+  analysis report;
+- review and modify every scientific parameter through visible notebook code
+  and an optional guided interface.
 
-For participant `i`, pathway `k`, and p-value threshold `tau`,
+This makes it possible to move quickly from GWAS results to pathway-resolved
+genetic profiles while keeping all participant-level data inside the All of Us
+controlled workspace.
 
-```text
-P[i,k,tau] = sum_j G[i,j] * beta[j] * A[j,k] * L[j,k] * I(p[j] <= tau)
-```
+## Pathway Score Definition
 
-- `G[i,j]`: effect-allele dosage for variant `j`.
-- `beta[j]`: GWAS effect estimate.
-- `A[j,k]`: 1 when variant `j` maps to a gene in pathway `k`.
-- `L[j,k]`: 1 when the variant remains after pathway-specific LD clumping.
-- `I(p[j] <= tau)`: GWAS p-value threshold indicator.
+For participant $i$, pathway $k$, and GWAS p-value threshold $\tau$,
+
+$$
+P_{ik}^{(\tau)}=
+\sum_j G_{ij}\widehat{\beta}_jA_{jk}L_{jk}
+\mathbf{1}(p_j\leq\tau).
+$$
+
+- $G_{ij}$ is the effect-allele dosage for variant $j$.
+- $\widehat{\beta}_j$ is the GWAS effect estimate.
+- $A_{jk}=1$ when variant $j$ maps to a gene in pathway $k$.
+- $L_{jk}=1$ when variant $j$ remains after pathway-specific LD clumping.
+- $\mathbf{1}(p_j\leq\tau)$ applies the selected GWAS p-value threshold.
 
 ## Start With the Quick Demo
 
