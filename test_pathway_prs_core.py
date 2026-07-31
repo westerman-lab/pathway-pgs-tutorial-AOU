@@ -147,6 +147,11 @@ def test_compact_app_launches_without_writing(monkeypatch, tmp_path: Path):
         observed.append(widget)
         pending.extend(getattr(widget, "children", ()))
     assert not any(isinstance(widget, widgets.FileUpload) for widget in observed)
+    assert any(
+        "Scoring engine not found" in getattr(widget, "value", "")
+        for widget in observed
+        if isinstance(widget, widgets.HTML)
+    )
 
     run_mode = next(
         widget

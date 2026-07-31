@@ -1,48 +1,41 @@
-# Pathway PGS Tutorial for All of US
+# Interactive Pathway PGS Tutorial for All of Us
 
-An interactive Jupyter workflow for constructing pathway-level polygenic
-scores in the All of Us Researcher Workbench.
+A code-first Jupyter tutorial for constructing pathway-level polygenic scores
+inside the All of Us Researcher Workbench.
 
-## Overview
+## Purpose
 
-The notebook guides users from GWAS summary statistics to participant-level
-pathway PGS values while keeping controlled data inside the All of Us
-workspace.
+This repository is designed for teaching and reproducible analysis. The
+notebook walks through the code and scientific choices rather than treating
+pathway scoring as a one-click black box.
 
-The workflow performs five main operations:
+Readers can inspect and modify:
 
-1. validate the input files and detect GWAS columns;
-2. map variants to genes and genes to pathways;
-3. harmonize GWAS alleles with All of Us genotype variants;
-4. perform pathway-specific clumping and scoring;
-5. summarize QC results and generate figures.
+1. GWAS column detection and effect-allele definitions;
+2. physical or custom SNP-to-gene mapping;
+3. gene-to-pathway membership;
+4. allele harmonization with All of Us genotypes;
+5. LD-clumping and p-value thresholds;
+6. the exact scoring command, QC, figures, and output report.
 
-For participant `i` and pathway `k`, the score is
+An optional interactive helper is included at the end of the notebook. It
+calls the same functions shown in the visible code cells.
+
+## Score definition
+
+For participant `i`, pathway `k`, and GWAS p-value threshold `tau`:
 
 ```text
 P[i,k] = sum_j G[i,j] * beta[j] * A[j,k] * L[j,k] * I(p[j] <= tau)
 ```
 
-where `G` is effect-allele dosage, `beta` is the GWAS effect estimate, `A`
-indicates pathway membership, `L` indicates retention after LD clumping, and
-`tau` is the selected GWAS p-value threshold.
-
-## Main features
-
-- compact interactive interface inside a Jupyter notebook;
-- automatic detection of common GWAS column names;
-- physical-distance or user-supplied SNP-to-gene mapping;
-- Reactome, GO Biological Process, WikiPathways, or custom pathway definitions;
-- direct use of chromosome-wise All of Us PLINK BED files;
-- reproducible configuration and command manifests;
-- aggregate QC tables, reports, and publication-ready PNG/PDF figures;
-- explicit safeguards for controlled participant-level data.
+`G` is effect-allele dosage, `beta` is the GWAS effect estimate, `A` is
+variant-to-pathway membership, and `L` indicates retention after
+pathway-specific LD clumping.
 
 ## Quick start in All of Us
 
-### 1. Add the repository to the workspace
-
-Clone the repository in a terminal:
+Clone the repository in a Workbench terminal:
 
 ```bash
 cd ~
@@ -51,137 +44,86 @@ cd pathway-pgs-tutorial
 pip install --user -r requirements.txt
 ```
 
-Alternatively, download the latest release ZIP, upload it to the workspace,
-and unzip it under `/home/jupyter`.
+Open `Pathway_PGS_AoU_Tutorial.ipynb` in JupyterLab and run the cells in order.
+Do not use **Run All** for a full analysis.
 
-### 2. Open the notebook
+The notebook defaults to a short technical demonstration with 100 AoU
+participants, chromosome 21, two synthetic variants, and two synthetic
+pathways. It is not a scientific result.
 
-Open `Pathway_PGS_AoU_Tutorial.ipynb` in JupyterLab and select:
+## Notebook sections
 
-```text
-Kernel -> Restart Kernel and Run All Cells
+| Section | What the reader sees |
+|---|---|
+| 0. Load code | Exact imported functions and source-file location |
+| 1. Choices | Editable genome build, mapping, clumping, and scoring parameters |
+| 2. Inputs | Detected GWAS columns, pathway contents, and GTF QC |
+| 3. Mapping | Physical-distance and custom SNP-to-gene alternatives |
+| 4. AoU preparation | Deduplicated variant union and allele harmonization code |
+| 5. Review | Validation table and complete generated command |
+| 6. Scoring | Explicitly enabled score calculation |
+| 7. Results | Aggregate QC, figures, and report |
+
+Expensive operations are off by default:
+
+```python
+PREPARE_AOU_DATA = False
+RUN_SCORING = False
 ```
 
-The interface should appear below the final notebook cell within a few
-seconds.
+Set each value to `True` only after reviewing its section.
 
-### 3. Run the quick demo
-
-Keep `Run mode` set to **Quick demo**. The demo uses 100 workspace
-participants, chromosome 21, two synthetic variants, and two synthetic
-pathways. It tests the software and genotype connection; it is not a
-scientific analysis.
-
-Run the five buttons in order:
-
-1. **Check** validates files, tools, and detected GWAS columns.
-2. **Prepare data** harmonizes the demo GWAS with All of Us variant metadata.
-3. **Review** displays QC and the exact scoring command without running it.
-4. **Calculate** creates the pathway scores.
-5. **Results** displays aggregate QC, figures, and the report location.
-
-Wait for each step to finish before starting the next one. The quick demo
-usually completes in a few minutes after the scoring engine is available.
-
-## Full analysis
-
-Switch `Run mode` to **Full analysis** and provide or select these inputs:
+## Scientific inputs
 
 | Input | Required content |
 |---|---|
-| GWAS summary statistics | Chromosome, position, SNP ID, effect allele, other allele, beta or OR, and p-value |
-| Gene annotation | A genome-build-matched GTF for physical mapping, or a custom SNP-to-gene table |
-| Pathway definition | Reactome, GO Biological Process, WikiPathways, or custom GMT |
-| Participant keep file | Two columns containing the intended PLINK FID and IID values |
+| GWAS summary statistics | Chromosome, position, variant ID, effect allele, other allele, beta or OR, and p-value |
+| Gene annotation | Genome-build-matched GTF for physical mapping, or a custom SNP-to-gene table |
+| Pathway definition | Reactome, GO Biological Process, WikiPathways, or a custom GMT |
+| Participant keep file | Intended PLINK FID and IID values inside the controlled workspace |
 
-All of Us v9 WGS uses GRCh38. Inputs from GRCh37 must be lifted or otherwise
-harmonized before they are combined with the default AoU target.
+All of Us v9 WGS uses GRCh38. GRCh37 inputs must be lifted or otherwise
+harmonized before use with the default target.
 
-### SNP-to-gene options
+## Mapping choices
 
-**Physical distance** assigns variants within each gene and its strand-aware
-upstream/downstream windows. The default windows can be changed under
-`Advanced settings`.
+**Physical distance** assigns variants within gene bodies and configurable,
+strand-aware upstream and downstream windows.
 
-**Custom mapping** accepts eQTL, regulatory, chromatin, or other mappings. The
-table must contain a gene column and either a variant-ID column or chromosome
+**Custom mapping** accepts eQTL, regulatory, chromatin, or other maps. The
+table must include a gene column and either a variant-ID column or chromosome
 and position columns.
-
-### GWAS harmonization
-
-The preparation step matches chromosome, position, and alleles against the
-All of Us target. It writes a compact scoring file with the canonical headers
-`CHR`, `BP`, `SNP`, `A1`, `A2`, `BETA` (or `OR`), and `P`. Original effect
-alleles and effect sizes are not changed.
 
 ## Outputs
 
-By default, outputs are written under:
+The default output directory is:
 
 ```text
 /home/jupyter/analysis/results/pathway_prs_tutorial/
 ```
 
-The output directory includes:
-
-- `run_config.json`: complete analysis settings;
-- `run_manifest.json`: exact command, status, and log summary;
-- pathway score files generated by the scoring engine;
-- aggregate score and pathway QC tables;
-- `figures/pathway_pgs_results.png` and `.pdf`;
-- a concise Markdown analysis report.
-
-Person-level score files must remain inside the controlled All of Us
-workspace. Do not download or commit participant IDs, genotypes, phenotypes,
-or score matrices to this repository.
-
-## Scoring engine
-
-The external Linux scoring engine is not bundled in this repository. If it is
-not already available, use **Install scoring engine** in the interface. The
-notebook records the selected executable paths and exact command in the run
-manifest.
-
-## Troubleshooting
-
-### The interface does not appear
-
-Restart the kernel and run all cells. Confirm that the notebook is opened from
-the repository directory and that `ipywidgets` is installed.
-
-### A required file is missing
-
-Use **Find local inputs**, review the detected paths, and provide a custom path
-when the desired GTF, GMT, GWAS, or keep file is not present.
-
-### Step 4 reports a GWAS column error
-
-Rerun **Prepare data** before **Calculate**. Preparation creates the canonical
-GWAS headers required by the scoring wrapper.
-
-### A run is slow
-
-Start with the quick demo or a small participant keep file. Full runtime
-depends on the number of participants, chromosomes, pathways, retained
-variants, and available workspace resources.
+It contains the saved configuration, exact command manifest, aggregate QC,
+PNG/PDF figures, and a Markdown report. Person-level scores must remain inside
+the controlled All of Us workspace and must not be committed to this
+repository.
 
 ## Repository contents
 
-- `Pathway_PGS_AoU_Tutorial.ipynb`: user-facing notebook;
-- `pathway_pgs_app.py`: interactive interface and callbacks;
+- `Pathway_PGS_AoU_Tutorial.ipynb`: code-visible teaching notebook;
 - `pathway_prs_core.py`: mapping, harmonization, scoring, QC, and plotting;
-- `demo_data/`: small synthetic quick-demo definitions;
-- `example_config.json`: reproducible configuration example;
-- `test_pathway_prs_core.py`: automated tests;
-- `requirements.txt`: Python dependencies;
-- `VERSION.txt`: package version.
+- `pathway_pgs_app.py`: optional guided interface;
+- `demo_data/`: synthetic technical demonstration inputs;
+- `build_notebook.py`: reproducible notebook generator;
+- `example_config.json`: configuration example;
+- `test_pathway_prs_core.py`: workflow tests;
+- `test_notebook_structure.py`: educational-structure tests.
+- `CHANGELOG.md`: release notes.
 
 ## Testing
 
-Run the automated tests with:
-
 ```bash
+python3 build_notebook.py
 python3 -m pytest -q
 ```
 
-The current release is `v2.2.4`.
+Current release: `v2.3.0`.

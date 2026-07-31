@@ -167,13 +167,13 @@ def launch_pathway_pgs_app():
     title = widgets.HTML(
         """
         <div style="border-left:5px solid #177e89;padding:8px 14px;margin:2px 0 12px 0">
-          <div style="font-size:22px;font-weight:700">Pathway PGS workspace</div>
+          <div style="font-size:22px;font-weight:700">Pathway PGS Tutorial for All of Us</div>
           <div style="color:#177e89;font-weight:600;margin-top:2px">
-            Made by Sijia Zhu, Westerman's Lab
+            Made by Sijia Zhu, Westerman Lab
           </div>
           <div style="color:#4b5563;margin-top:3px">
-            Run a short demonstration first, then switch to a complete or
-            custom pathway analysis.
+            Optional guided controls for the code-first tutorial. Review the
+            notebook methods and generated command before execution.
           </div>
         </div>
         """
@@ -519,7 +519,14 @@ def launch_pathway_pgs_app():
     source_gwas = {"path": ""}
 
     def refresh_engine_status() -> None:
-        ready = Path(prsice_r.value).exists() and Path(prsice_binary.value).exists()
+        wrapper = prsice_r.value.strip()
+        executable = prsice_binary.value.strip()
+        ready = bool(
+            wrapper
+            and executable
+            and Path(wrapper).is_file()
+            and Path(executable).is_file()
+        )
         color = "#eaf6ef" if ready else "#fff7e6"
         border = "#9bc9ac" if ready else "#e5c172"
         label = "Scoring engine ready" if ready else "Scoring engine not found"
