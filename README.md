@@ -9,21 +9,13 @@ The tutorial connects every stage of the analysis in one reproducible workflow:
 
 Users can:
 
-- automatically detect common GWAS formats and harmonize effect alleles with
-  All of Us genotypes;
-- map SNPs to genes using physical distance or a custom eQTL, regulatory, or
-  chromatin-based mapping table;
-- use Reactome, GO Biological Process, WikiPathways, or a custom pathway set;
-- perform pathway-specific LD clumping and GWAS p-value thresholding;
-- calculate pathway scores for a selected All of Us participant cohort;
-- generate aggregate QC tables, publication-ready figures, and a reproducible
-  analysis report;
-- review and modify every scientific parameter through visible notebook code
-  and an optional guided interface.
+- connect GWAS summary statistics with All of Us genotype data;
+- map variants to genes and biological pathways;
+- calculate pathway-level polygenic scores for selected participants;
+- customize SNP-to-gene mapping, pathway definitions, LD clumping, and p-value thresholds;
+- automatically generate QC summaries, figures, and reproducible reports.
 
-This makes it possible to move quickly from GWAS results to pathway-resolved
-genetic profiles while keeping all participant-level data inside the All of Us
-controlled workspace.
+All participant-level data remain within the All of Us controlled workspace.
 
 ## Pathway Score Definition
 
