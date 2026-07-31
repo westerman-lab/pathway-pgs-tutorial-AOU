@@ -1,12 +1,11 @@
 # Pathway PGS Tutorial for All of Us
 
-An end-to-end Jupyter workflow that converts GWAS summary statistics and All
-of Us WGS genotypes into biologically interpretable pathway-level polygenic
-scores (pPGS).
+An end-to-end Jupyter workflow to construct the interpretable pathway-level polygenic
+scores (pPGS) in All of Us workbench.
 
 The tutorial connects every stage of the analysis in one reproducible workflow:
 
-**GWAS variants -> genes -> biological pathways -> participant-level pPGS**
+**Variants -> genes -> biological pathways -> individual-level pPGS**
 
 Users can:
 
