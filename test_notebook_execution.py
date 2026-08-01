@@ -21,6 +21,14 @@ for number, cell in enumerate(notebook["cells"], start=1):
     if cell["cell_type"] != "code":
         continue
     source = "".join(cell.get("source", []))
+    source = source.replace(
+        'PREPARE_AOU_DATA = RUN_MODE == "demo"',
+        'PREPARE_AOU_DATA = False',
+    )
+    source = source.replace(
+        'RUN_SCORING = RUN_MODE == "demo"',
+        'RUN_SCORING = False',
+    )
     exec(compile(source, f"notebook-cell-{number}", "exec"), namespace)
 
 assert namespace["PREPARE_AOU_DATA"] is False

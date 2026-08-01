@@ -1,4 +1,4 @@
-# Pathway PGS Tutorial for All of Us
+# From Variant Effects to Pathway PGS in All of Us
 
 An end-to-end Jupyter workflow to construct the interpretable pathway-level polygenic
 scores (pPGS) in All of Us workbench.
@@ -16,6 +16,8 @@ Users can:
 - automatically generate QC summaries, figures, and reproducible reports.
 
 All participant-level data remain within the All of Us controlled workspace.
+
+**Made by Westerman Lab**
 
 ## Pathway Score Definition
 
@@ -49,25 +51,24 @@ cd pathway-pgs-tutorial-AOU
 pip install --user -r requirements.txt
 ```
 
-Open `Pathway_PGS_AoU_Tutorial.ipynb` in JupyterLab. Run the cells in order.
-Do not use **Run All** for a full analysis because preparation and scoring are
-intentional checkpoints.
+Open `Pathway_PGS_AoU_Tutorial.ipynb` in JupyterLab and run the cells in order.
 
 For the first demo:
 
 1. Leave `RUN_MODE = "demo"`.
-2. Review Sections 0-3.
-3. Set `PREPARE_AOU_DATA = True` and run Section 4.
-4. Review the validation table and exact command in Section 5.
-5. Set `RUN_SCORING = True` and run Section 6.
-6. Run Section 7 to create aggregate QC, figures, and the report.
+2. Run the notebook from top to bottom.
+3. Review the explanation, code, and QC output at each step.
+4. Inspect the final aggregate table, figures, and report.
 
-Both expensive switches are `False` by default:
+The demo prepares and scores its two synthetic variants automatically:
 
 ```python
-PREPARE_AOU_DATA = False
-RUN_SCORING = False
+PREPARE_AOU_DATA = RUN_MODE == "demo"
+RUN_SCORING = RUN_MODE == "demo"
 ```
+
+Changing `RUN_MODE` to `"full"` turns both actions off. Enable them only after
+reviewing the real files, cohort, mapping method, and generated command.
 
 ## Move From Demo to Scientific Analysis
 
@@ -95,20 +96,17 @@ they are combined with the default target.
 | P-value thresholds | Controls how much GWAS signal enters each pathway score |
 | Score method | Defines how retained weighted dosages are aggregated |
 
-## Notebook Map
+## Tutorial Roadmap
 
-| Section | Purpose | Expected output |
+| Step | Scientific question | Expected output |
 |---|---|---|
-| 0. Load code | Import the visible workflow functions | Source locations |
-| 1. Choices | Set mapping, clumping, threshold, and execution controls | Reproducible configuration |
-| 2. Inputs | Detect GWAS columns and inspect pathway and GTF files | Input QC |
-| 3. Mapping | Compare physical and custom SNP-to-gene routes | Selected mapping branch |
-| 4. AoU preparation | Build a deduplicated variant union and harmonize alleles | Canonical GWAS and target list |
-| 5. Review | Validate inputs and print the exact command | Dry-run manifest |
-| 6. Scoring | Run pathway-specific clumping and scoring | Participant-by-pathway scores |
-| 7. Results | Summarize scores without exporting participant IDs | Aggregate table, figures, report |
+| 1. Choose evidence and participants | Which variant effects, thresholds, pathways, and people will be analyzed? | Reproducible settings |
+| 2. Inspect weights and definitions | Do the GWAS columns, genes, and pathways mean what we expect? | Input QC and pathway preview |
+| 3. Link variants to pathways | Which variants belong to each biological pathway? | Variant-to-pathway membership |
+| 4. Match variants to AoU | Are the same variants and alleles available in the AoU genotypes? | Harmonized scoring input |
+| 5. Control LD and calculate pPGS | Which variants remain, and how are participant scores calculated? | pPGS, aggregate QC, figures, and report |
 
-The optional interface at the end mirrors these same stages:
+The guided interface at the end repeats the same visible workflow through:
 **Check inputs**, **Map & harmonize**, **Review command**, **Calculate scores**,
 and **Inspect results**.
 
@@ -162,10 +160,10 @@ the selected variants exist in the target genotype release.
 Check the number of retained variants, LD settings, p-value threshold, allele
 harmonization, and minor-allele frequency in the selected participants.
 
-**The notebook appears to stop before scoring**
+**A full analysis stops before preparation or scoring**
 
-This is expected while the safety switches are `False`. Review the preceding
-section before enabling each expensive step.
+This is expected after changing `RUN_MODE` to `"full"`. Review the scientific
+inputs and exact command before enabling each action.
 
 ## Repository Contents
 
@@ -173,7 +171,7 @@ section before enabling each expensive step.
 - `pathway_prs_core.py`: mapping, harmonization, command, QC, and plotting code;
 - `pathway_pgs_app.py`: optional guided interface;
 - `demo_data/`: synthetic demonstration inputs;
-- `build_notebook.py`: reproducible notebook generator;
+- `build_notebook.py`: notebook syntax, structure, and release-output validator;
 - `example_config.json`: configuration example;
 - `test_pathway_prs_core.py`: unit and synthetic workflow tests;
 - `test_notebook_execution.py`: safe top-to-bottom notebook test;
@@ -192,4 +190,4 @@ synthetic score execution, aggregate result loading, interface launch, and safe
 top-to-bottom notebook execution. Real All of Us WGS execution must be tested
 inside an authorized controlled workspace.
 
-Current release: `v2.4.0`.
+Current release: `v2.5.0`.

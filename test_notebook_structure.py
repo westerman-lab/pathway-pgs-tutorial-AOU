@@ -29,15 +29,20 @@ def test_notebook_exposes_methods_and_safety_switches():
     )
 
     required_text = [
-        "Interactive Pathway PGS Tutorial for All of Us",
-        "PREPARE_AOU_DATA = False",
-        "RUN_SCORING = False",
+        "From Variant Effects to Pathway PGS in All of Us",
+        "Step 1: Choose the variant evidence",
+        "Step 2: Inspect the variant weights",
+        "Step 3: Link variants to genes and pathways",
+        "Step 4: Match pathway variants to All of Us genotypes",
+        "Step 5: Control LD and calculate pathway scores",
+        'PREPARE_AOU_DATA = RUN_MODE == "demo"',
+        'RUN_SCORING = RUN_MODE == "demo"',
         "build_pathway_variant_union_bed",
         "harmonize_gwas_ids_to_bed",
         "build_pathway_pgs_command",
-        "Exact command (review only)",
-        "Optional guided interface",
-        "What each stage answers",
+        "Exact scoring command (review before running)",
+        "The guided interface",
+        "Move from the demo to a complete analysis",
     ]
     for text in required_text:
         assert text in source
@@ -53,3 +58,12 @@ def test_notebook_does_not_hide_the_primary_workflow():
     assert code_source.index("infer_gwas_schema") < code_source.index(
         "launch_pathway_pgs_app()"
     )
+
+
+def test_public_notebook_contains_no_saved_runtime_output():
+    notebook = load_notebook()
+    code_cells = [cell for cell in notebook["cells"] if cell["cell_type"] == "code"]
+
+    assert all(cell.get("execution_count") is None for cell in code_cells)
+    assert all(not cell.get("outputs") for cell in code_cells)
+    assert all("".join(cell.get("source", [])).strip() for cell in code_cells)
